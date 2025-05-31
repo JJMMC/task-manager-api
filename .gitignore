@@ -1,2 +1,3 @@
-
-app/__pycache__
+# Bytecode de Python
+__pycache__/
+*.py[cod]
