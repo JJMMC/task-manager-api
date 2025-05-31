@@ -1,38 +1,21 @@
 from fastapi import FastAPI
-from pydantic import BaseModel, EmailStr
-import database
+#from pydantic import BaseModel, EmailStr
+from app import schemas # Llamamos a los esquemas definido en schemas.py
+from app import database
+from app import models # Llamamos a los modelos de SQLAlchemy generado en models.py
+from app import routes
 
 app = FastAPI()
 
-
-# Modelos de pydantic de Validación de datos que vamos a utilizar:
-
-class UserSchema(BaseModel):
-    id: int
-    name: str
-    surname: str
-    email: EmailStr
-    password: str
-    disable: bool | None = None
-
-class TaskSchema(BaseModel):
-    id: int
-    title: str
-    description: str
-    created_at: str
-    done: bool | None = None
+app.include_router(routes.router) # Para acceder a las routas contenidas en routes 
 
 
 
 
-@app.get('/')
-def index():
-    print('Hello')
 
-app.post('/task')
-def create_task():
-    pass
+
 
 
 if __name__ == '__main__':
-    database.Base.metadata.create_all(database.engine)
+    database.Base.metadata.create_all(database.engine) # Creamos la Bd si no lo está ya.
+    

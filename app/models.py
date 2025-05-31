@@ -1,12 +1,12 @@
 # Declaramos Modelos/Esquemas de SQLAlchemy
-import database
+#import database
 from sqlalchemy import Column, Integer, String, Boolean, Float, DateTime
 from datetime import datetime
-from database import Base
+from app.database import Base
 
 
-#La clase Producto del código representa la tabla de nuestra DB
-class User(database.Base):
+# Definnimos las tablas de nuestra DB para SQLAlchemy
+class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
@@ -29,7 +29,7 @@ class User(database.Base):
 
 
 
-class Task(database.Base):
+class Task(Base):
     __tablename__ = 'tasks'
 
     id = Column(Integer, primary_key=True, index=True)
