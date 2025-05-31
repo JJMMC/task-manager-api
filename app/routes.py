@@ -41,4 +41,13 @@ def update_task( updated_task: schemas.TaskCreate, task_id: int, db: Session = D
     for key, value in updated_task.model_dump().items():
         setattr(task, key, value)
     db.commit()
-    return db.query(models.Task).filter(models.Task.id == task_id).first()
+    return task
+
+@router.delete('/tasks/')
+def delete_task(task_id: int, db: Session = Depends(get_db)):
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    db.delete(task)
+    db.commit()
+    return db.query(models.Task).all()
