@@ -12,10 +12,6 @@ app.include_router(routes.router) # Para acceder a las routas contenidas en rout
 
 
 
-
-
-
-
 if __name__ == '__main__':
     database.Base.metadata.create_all(database.engine) # Creamos la Bd si no lo está ya.
     
