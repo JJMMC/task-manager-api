@@ -14,6 +14,12 @@ def get_db():
     finally:
         db.close()
 
+# def crear_access_token(data: dict):
+#     datos = data.copy()
+#     now = datetime.datetime.now(datetime.timezone.utc)
+#     expire = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+#     datos.update({"exp": expire})
+#     return jwt.encode(datos, SECRET_KEY, algorithm=ALGORITHM)
 
 
 #########
@@ -102,4 +108,10 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     return db.query(models.User).all()
 
 
+#########
+# TOKEN #
+#########
+@router.get('/token/')
+def create_token():
+    pass
 
