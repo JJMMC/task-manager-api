@@ -1,10 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException        # APIRouter para definir rutas, Depends para inyección de dependencias
+from fastapi import APIRouter, Depends, HTTPException, status        # APIRouter para definir rutas, Depends para inyección de dependencias
 from sqlalchemy.orm import Session           # Session para manejar la sesión de la base de datos
 import app.models  as models                              # Tus modelos de SQLAlchemy (Task)
 import app.schemas as schemas                               # Tus esquemas de Pydantic (Task, TaskCreate)
+from app.auth import create_access_token
+from passlib.context import CryptContext
 from app.database import SessionLocal            # Para obtener la sesión de la base de datos
 
+
 router = APIRouter()                         # Instancia de router para registrar rutas
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Dependencia para obtener la sesión de la base de datos
 def get_db():
@@ -13,13 +18,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-# def crear_access_token(data: dict):
-#     datos = data.copy()
-#     now = datetime.datetime.now(datetime.timezone.utc)
-#     expire = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-#     datos.update({"exp": expire})
-#     return jwt.encode(datos, SECRET_KEY, algorithm=ALGORITHM)
 
 
 #########
@@ -73,11 +71,14 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
 
 @router.post("/users/",response_model= schemas.User, tags=['Users'])
 def create_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
-    user_data = models.User(**data.model_dump())
+    hashed_password = pwd_context.hash(data.password)
+    user_data = models.User(**data.model_dump(exclude={"password"}), password=hashed_password) # Excluimos el password para asignar el hasheado
+    #user_data.password = hashed_password
     db.add(user_data)
     db.commit()
     db.refresh(user_data)
     return user_data
+
 
 @router.get("/users/", response_model=list[schemas.User], tags=['Users'])
 def get_users(db: Session = Depends(get_db)):
@@ -111,7 +112,29 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
 #########
 # TOKEN #
 #########
-@router.get('/token/')
-def create_token():
-    pass
+@router.post('/token', tags=['Token'])
+def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.user_name == request.username).first()
+    if not user or not pwd_context.verify(request.password, user.password):  # type: ignore
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials"
+        )
+    token = create_access_token({"sub": user.user_name})
+    return {"access_token": token, "token_type": "bearer"}
 
+
+
+# @router.post('/token',tags=['Token'])
+# def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
+#     req_username = request.username
+#     req_password = request.password
+#     user = db.query(models.User).filter(models.User.user_name == req_username).first()
+#     if not user:
+#         raise HTTPException(status_code=404, detail='User not found')
+#     password = user.password
+#     if req_password == password:
+#         return user
+        
+#     else:
+#         raise HTTPException(status_code=404, detail='Incorrect Password')

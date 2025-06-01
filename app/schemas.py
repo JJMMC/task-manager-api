@@ -11,6 +11,7 @@ from datetime import datetime
 class UserBase(BaseModel):
     name: str
     surname: str
+    user_name: str
     email: EmailStr
     password: str
     disable: bool | None = None
@@ -55,7 +56,6 @@ class UserInTask(BaseModel):
 class TaskCreate(TaskBase):
     pass
 
-
 class Task(TaskBase):
     id: int
     created_at: datetime
@@ -64,4 +64,11 @@ class Task(TaskBase):
     class Config:
         from_attributes = True # Para convertir entre SQLAlchemy y Pydantic
 
+# ----------------
+# SCHEMAS PYDANTIC - TASKS 
+# ----------------
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 
