@@ -13,7 +13,7 @@ class UserBase(BaseModel):
     surname: str
     user_name: str
     email: EmailStr
-    password: str
+    #hashed_password: str
     disable: bool | None = None
 
 class TaskInUser(BaseModel):
@@ -25,7 +25,7 @@ class TaskInUser(BaseModel):
         from_attributes = True
 
 class UserCreate(UserBase):
-    pass
+    password: str
 
 class User(UserBase):
     id: int

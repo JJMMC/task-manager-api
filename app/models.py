@@ -14,8 +14,8 @@ class User(Base):
     user_name = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=False)
     surname = Column(String, nullable=False)
-    email = Column(String, nullable=False)
-    password = Column(String,nullable=False)
+    email = Column(String, nullable=False, unique=True)
+    hashed_password = Column(String,nullable=False)
     created_at = Column(DateTime, default=datetime.now())
     disable = Column(Boolean, default=False)
     

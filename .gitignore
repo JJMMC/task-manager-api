@@ -1,3 +1,2 @@
-# Bytecode de Python
 __pycache__/
-*.py[cod]
+/app/routes2.py

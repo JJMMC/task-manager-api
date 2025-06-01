@@ -2,22 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status        # APIRouter
 from sqlalchemy.orm import Session           # Session para manejar la sesión de la base de datos
 import app.models  as models                              # Tus modelos de SQLAlchemy (Task)
 import app.schemas as schemas                               # Tus esquemas de Pydantic (Task, TaskCreate)
-from app.auth import create_access_token
-from passlib.context import CryptContext
-from app.database import SessionLocal            # Para obtener la sesión de la base de datos
-
+from app.auth import create_access_token, pwd_context, get_current_user
+from app.database import SessionLocal, get_db            # Para obtener la sesión de la base de datos
+from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter()                         # Instancia de router para registrar rutas
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Dependencia para obtener la sesión de la base de datos
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 #########
@@ -71,14 +62,15 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
 
 @router.post("/users/",response_model= schemas.User, tags=['Users'])
 def create_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
-    hashed_password = pwd_context.hash(data.password)
-    user_data = models.User(**data.model_dump(exclude={"password"}), password=hashed_password) # Excluimos el password para asignar el hasheado
-    #user_data.password = hashed_password
-    db.add(user_data)
+    email_in_db = db.query(models.User).filter(models.User.email == data.email).first()
+    if email_in_db:
+                raise HTTPException(status_code=400, detail="Email already registered")
+    hashed_pwd = pwd_context.hash(data.password)
+    new_user_data = models.User(**data.model_dump(exclude={"password"}), hashed_password=hashed_pwd)
+    db.add(new_user_data)
     db.commit()
-    db.refresh(user_data)
-    return user_data
-
+    db.refresh(new_user_data)
+    return new_user_data
 
 @router.get("/users/", response_model=list[schemas.User], tags=['Users'])
 def get_users(db: Session = Depends(get_db)):
@@ -109,13 +101,16 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     return db.query(models.User).all()
 
 
+
+
 #########
 # TOKEN #
 #########
+
 @router.post('/token', tags=['Token'])
-def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.user_name == request.username).first()
-    if not user or not pwd_context.verify(request.password, user.password):  # type: ignore
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.user_name == form_data.username).first()
+    if not user or not pwd_context.verify(form_data.password, user.hashed_password):  # type: ignore
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"
@@ -124,17 +119,13 @@ def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
     return {"access_token": token, "token_type": "bearer"}
 
 
+##############
+# EN PRUEBAS #
+##############
 
-# @router.post('/token',tags=['Token'])
-# def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
-#     req_username = request.username
-#     req_password = request.password
-#     user = db.query(models.User).filter(models.User.user_name == req_username).first()
-#     if not user:
-#         raise HTTPException(status_code=404, detail='User not found')
-#     password = user.password
-#     if req_password == password:
-#         return user
-        
-#     else:
-#         raise HTTPException(status_code=404, detail='Incorrect Password')
+@router.get("/protected-route", tags=["Protected"])
+def protected_route(current_user=Depends(get_current_user)):
+    return {"message": f"Hola, {current_user.name}! con email: {current_user.email}"}
+
+
+
