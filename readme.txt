@@ -1,3 +1,6 @@
+
+
+
 python3 -m app.main #regeneramos la DB
 
 

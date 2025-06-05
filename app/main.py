@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-#from pydantic import BaseModel, EmailStr
 from app import schemas # Llamamos a los esquemas definido en schemas.py
 from app import database
 from app import models # Llamamos a los modelos de SQLAlchemy generado en models.py
