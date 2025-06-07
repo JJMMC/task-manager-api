@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException                   # APIRouter para definir rutas, Depends para inyección de dependencias
+from fastapi import APIRouter, Depends                                  # APIRouter para definir rutas, Depends para inyección de dependencias
 from sqlalchemy.orm import Session                                      # Session para manejar la sesión de la base de datos
 import app.models  as models                                            # Tus modelos de SQLAlchemy (Task)
 import app.schemas as schemas                                           # Tus esquemas de Pydantic (Task, TaskCreate)
 from app.auth import get_current_user
 from app.database import get_db                                         # Para obtener la sesión de la base de datos
-from fastapi.security import OAuth2PasswordRequestForm
+from app.services import tasks_service
+
 
 router = APIRouter(tags=['Tasks'])                                                    # Instancia de router para registrar rutas
 
@@ -14,46 +15,28 @@ router = APIRouter(tags=['Tasks'])                                              
 #########
 
 @router.post("/tasks/", response_model=schemas.Task)
-def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    db_task = models.Task(**task.model_dump(),user_id = current_user.id)
-    db.add(db_task)
-    db.commit()
-    db.refresh(db_task)
-    return db_task
+def new_task(task: schemas.TaskCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    return tasks_service.create_task(task, db, current_user)
 
 @router.get("/tasks/", response_model=list[schemas.Task])
-def get_tasks(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    return db.query(models.Task).filter(models.Task.user_id == current_user.id).all()
+def user_tasks(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    return tasks_service.get_user_tasks(db, current_user)
 
 @router.get("/tasks/{task_id}", response_model=schemas.Task)
-def get_task_by_id(task_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    task = db.query(models.Task).filter(models.Task.user_id == current_user.id).filter(models.Task.id == task_id).first()
-    if task is None:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return task
+def user_task_by_id(task_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    return tasks_service.get_user_task_by_id(task_id, db, current_user)
 
 @router.put("/tasks/{task_id}", response_model=schemas.Task)
-def update_task( updated_task: schemas.TaskCreate, 
-                task_id: int, db: Session = Depends(get_db), 
+def update_task(updated_task: schemas.TaskCreate, 
+                task_id: int, 
+                db: Session = Depends(get_db), 
                 current_user: models.User = Depends(get_current_user)
                 ):
-    task = db.query(models.Task).filter(models.Task.user_id == current_user.id).filter(models.Task.id == task_id).first()
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    for key, value in updated_task.model_dump().items():
-        setattr(task, key, value)
-    db.commit()
-    db.refresh(task)
-    return task
+    return tasks_service.put_task(updated_task, task_id, db, current_user,)
 
 @router.delete('/tasks/{task_id}')
 def delete_task(task_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    task = db.query(models.Task).filter(models.Task.user_id == current_user.id).filter(models.Task.id == task_id).first()
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    db.delete(task)
-    db.commit()
-    return {"detail": "Task deleted"}
+    return tasks_service.delete_task(task_id, db, current_user)
 
 
 
