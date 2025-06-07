@@ -1,4 +1,5 @@
-from fastapi import Depends, HTTPException, APIRouter
+from .config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
@@ -8,9 +9,6 @@ from sqlalchemy.orm import Session
 from app.database import get_db 
 import app.models as models
 
-SECRET_KEY = "superclave"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 15
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto") # Para Hashear las contraseñas
 
