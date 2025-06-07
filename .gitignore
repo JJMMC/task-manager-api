@@ -4,4 +4,4 @@ app/routes_backup.py
 *.pyc
 .env
 venv/
-tasks.db
+task_manager.db

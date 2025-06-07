@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
-
+from pydantic import ConfigDict
 
 
 # ----------------
@@ -21,8 +21,9 @@ class TaskInUser(BaseModel):
     title: str
     done: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+    # class Config:
+    #     from_attributes = True
 
 class UserCreate(UserBase):
     password: str
@@ -32,8 +33,10 @@ class User(UserBase):
     created_at: datetime
     tasks: List[TaskInUser] = []  # Relación uno a muchos
     
-    class Config:
-        from_attributes = True # Para convertir entre SQLAlchemy y Pydantic
+
+    model_config = ConfigDict(from_attributes=True)
+    # class Config:
+    #     from_attributes = True # Para convertir entre SQLAlchemy y Pydantic
 
 
 # ----------------
