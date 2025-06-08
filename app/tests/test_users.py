@@ -25,38 +25,6 @@ def create_test_user(db, name="Test", surname="User", user_name="testuser", emai
     )
     return users_service.create_user(db, user_data)
 
-##############
-## FIXTURES ##
-##############
-
-# Fixture para eliminar la base de datos de pruebas al final de la sesión de tests
-@pytest.fixture(scope="session", autouse=True)
-def cleanup_test_db():
-    yield
-    db_path = "./test_task_manager.db"
-    if os.path.exists(db_path):
-        os.remove(db_path)
-
-# Fixture para eliminar datos en tabla de usuario al final de cada tests
-@pytest.fixture(autouse=True)
-def clean_users_table(get_test_db):
-    get_test_db.query(models.User).delete()
-    get_test_db.commit()
-
-# Fixture para eliminar datos en tabla de usuario al final de cada tests
-@pytest.fixture(autouse=True)
-def clean_task_table(get_test_db):
-    get_test_db.query(models.Task).delete()
-    get_test_db.commit()
-
-@pytest.fixture
-def get_test_db():
-    db = TestSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 
 ###########

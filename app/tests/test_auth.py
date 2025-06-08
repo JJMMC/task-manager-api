@@ -6,8 +6,6 @@ from fastapi.testclient import TestClient
 from app.main import app
 
 
-
-
 # Creamos el objeto client que nos permite simular el server activo
 client = TestClient(app)
 
@@ -37,8 +35,6 @@ def create_test_task(db, current_user, title="Test Task", description="Test Desc
 ###########
 ## TESTS ##
 ###########
-
-## LOGIN ##
 
 def test_login_ok(get_test_db):
     # Crear usuario de prueba en la base de datos
