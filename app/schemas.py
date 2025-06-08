@@ -21,7 +21,7 @@ class TaskInUser(BaseModel):
     title: str
     done: bool
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True) # Para convertir entre SQLAlchemy y Pydantic
     # class Config:
     #     from_attributes = True
 
@@ -34,7 +34,7 @@ class User(UserBase):
     tasks: List[TaskInUser] = []  # Relación uno a muchos
     
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True) # Para convertir entre SQLAlchemy y Pydantic
     # class Config:
     #     from_attributes = True # Para convertir entre SQLAlchemy y Pydantic
 
@@ -53,8 +53,9 @@ class UserInTask(BaseModel):
     name: str
     email: EmailStr
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True) # Para convertir entre SQLAlchemy y Pydantic
+    # class Config:
+    #     from_attributes = True
 
 class TaskCreate(TaskBase):
     pass
@@ -64,8 +65,10 @@ class Task(TaskBase):
     created_at: datetime
     owner: Optional[UserInTask]
     
-    class Config:
-        from_attributes = True # Para convertir entre SQLAlchemy y Pydantic
+
+    model_config = ConfigDict(from_attributes=True) # Para convertir entre SQLAlchemy y Pydantic
+    # class Config:
+    #     from_attributes = True # Para convertir entre SQLAlchemy y Pydantic
 
 # ----------------
 # SCHEMAS PYDANTIC - TASKS 
