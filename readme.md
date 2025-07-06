@@ -56,7 +56,7 @@ ask-manager-api/
 
 1. Clona el repositorio:
    ```bash
-   git clone https://github.com/tuusuario/task-manager-api.git
+   git clone [https://github.com/JJMMC/task-manager-api]
    cd task-manager-api
 
 2. Crea y activa el entorno virtual:
